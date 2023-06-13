@@ -89,12 +89,14 @@ const Login = () => {
       })
         .then((data) => {
             if (issigin) {
-                console.log(data)
+              const newval = data.email.replace(/[^a-zA-Z0-9]/ig, "")
+              localStorage.setItem("email",newval)
                 dispatch(authaction.addtoken())
                 history.replace("/home")
+            } else {
+              changehandler()
           }
-      })
-          .catch((err) => console.log(err.message));
+      }).catch((err) => console.log(err.message));
       setemail("")
       setpassword("")
       setconformpasswword("")
