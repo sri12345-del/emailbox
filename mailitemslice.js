@@ -10,7 +10,7 @@ const mailslice = createSlice({
             state.unreadmsg=state.data.filter(val=>val.tic===true).length
         },
         addapiitem(state, action) {
-            state.data = [...state.data, action.payload]
+            state.data = [...state.data,action.payload]
             state.unreadmsg=state.data.filter(val=>val.tic==true).length
         },
         readdata(state,action) {
@@ -21,7 +21,6 @@ const mailslice = createSlice({
         deleteitem(state, action) {
             state.data = state.data.filter(val => val.id != action.payload.id)
             state.unreadmsg=state.data.filter(val=>val.tic==true).length     
-
         },
         mailitem(state, action) {
             state.isshow=action.payload
@@ -29,6 +28,7 @@ const mailslice = createSlice({
         delmailitem(state) {
             state.isshow=""
         }
+        
 
        
     }
