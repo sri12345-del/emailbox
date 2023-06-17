@@ -5,13 +5,13 @@ const mailslice = createSlice({
     initialState: { data: [],unreadmsg:0 ,isshow:""},
     reducers: {
         additem(state, action) { 
-            let newval = { ...action.payload, tic:true}
-            state.data = [...state.data, newval]
+            const find = state.data.find(item => item.id === action.payload.id)
+            if (find) {
+                state.data=[...state.data]
+            } else {
+                state.data=[...state.data,action.payload]
+            }
             state.unreadmsg=state.data.filter(val=>val.tic===true).length
-        },
-        addapiitem(state, action) {
-            state.data = [...state.data,action.payload]
-            state.unreadmsg=state.data.filter(val=>val.tic==true).length
         },
         readdata(state,action) {
             let newval = { ...action.payload, tic: false }

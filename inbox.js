@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { useEffect, useState } from "react";
 import { Button, Card, Table } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,35 +7,45 @@ import Message from "./message";
 import { mailaction } from "../store/mailitemslice";
 import { sentMailAction } from "../store/sentMailslice";
 const Inbox = (props) => {
-    
-    const isshow = useSelector(state => state.mail.isshow)
-    const sentisshow = useSelector(state => state.sentmail.sentinbox)
     const dispatch=useDispatch()
-    const changeinbox = (obj) => {
-       props.open(obj)
+    const isshow=useSelector(state=>state.mailitem.isshow)
+    const sentisshow = useSelector(state => state.sentmail.sentinbox)
+    const openhandler = (val) => {
+        props.open(val)
     }
 
-    const sentclose=() => {
+
+     const sentclose=() => {
+         dispatch(sentMailAction.closeitem())
+     }
+    const deletesent = async (val) => {
+        dispatch(sentMailAction.deletemail(val))
         dispatch(sentMailAction.closeitem())
-    }
-    const deletesent = (sentisshow) => {
-      dispatch(sentMailAction.deletemail(sentisshow))  
-    }
-
-    const closehandler = () => {
-        dispatch(mailaction.delmailitem())
-    }
-    
-    const deletehandler = (sentisshow) => {
-        dispatch(mailaction.deleteitem(sentisshow))
-    }
-   
+         const email = localStorage.getItem("email")
+         try {
+             await axios.delete(`https://react-http-735b2-default-rtdb.firebaseio.com/${email}/sent/${val.id}.json`)
+         } catch (err) {
+             console.log(err)
+         }  
+     }
+     const closehandler = () => {
+         dispatch(mailaction.delmailitem())
+    }  
+     const deletehandler = async(val) => {
+         dispatch(mailaction.deleteitem(val))
+         dispatch(mailaction.delmailitem())
+         const email = localStorage.getItem("email")
+         try {
+             await axios.delete(`https://react-http-735b2-default-rtdb.firebaseio.com/${email}/inbox/${val.id}.json`)
+         } catch (err) {
+             console.log(err)
+         }
+    }   
     return (
-        <div>
+        <Card style={{margin:"2rem"}}>
             <Table>
                 <thead>
                     <tr>
-                        <th>#</th>
                         <th>Name</th>
                         <th>Subject</th>
                         <th>Text</th>
@@ -43,9 +53,9 @@ const Inbox = (props) => {
                 </thead>
                 <tbody>
                     {props.item.map((val) => (
-                        <tr key={val.id} id={val.id} onClick={changeinbox.bind(null, val)}>
-                            <td><div className={val.tic?classes.dot:""}></div></td>
-                            <td>{val.user_id}</td>
+                        <tr key={val.id} id={val.id} onClick={openhandler.bind(null, val)}>
+                            <td><div className={val.tic?classes.dot:""}></div>
+                                <div>{val.to}</div></td>
                             <td>{val.subject}</td>
                             <td>{val.text}</td>
                         </tr>
@@ -54,7 +64,7 @@ const Inbox = (props) => {
                 </Table>
             {isshow && <Message item={isshow} close={closehandler} delete={deletehandler}></Message>}   
             {sentisshow && <Message item={sentisshow} close={sentclose} delete={deletesent}></Message>}
-    </div>
+    </Card>
   );
 };
 

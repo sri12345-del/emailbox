@@ -4,7 +4,8 @@ import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { Button, Card, Container, Form, InputGroup } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { mailaction } from "./store/mailitemslice";
+import { sentMailAction } from "./store/sentMailslice";
+import axios from "axios";
 
 const EmailCompose = () => {
   const dispatch = useDispatch();
@@ -14,7 +15,7 @@ const EmailCompose = () => {
   const [subject, setSubject] = useState("");
   const [recipient, setRecipient] = useState("");
 
-  const handleEditorChange = (newEditorState) => {
+  const editorStatehandler = (newEditorState) => {
     setEditorState(newEditorState);
   };
 
@@ -26,36 +27,62 @@ const EmailCompose = () => {
     setRecipient(event.target.value);
   };
 
-  const handleSend = () => {
+  const handleSend = async(e) => {
+    e.preventDefault();
     const content = convertToRaw(editorState.getCurrentContent());
-      const obj = {
-          id:Math.random().toString(),
-          user_id: recipient,
-          subject: subject,
-          text: content.blocks[0].text,
-      };
-      dispatch(mailaction.additem(obj))
-  };
+    const reciveremail = recipient.replace(/[^a-zA-Z0-9]/gi, "");
+    const sentemail = localStorage.getItem("email");
+    const obj = {
+      to: recipient,
+      subject: subject,
+      text: content.blocks[0].text,
+      from: localStorage.getItem("email"),
+    };
+    try {
+    await axios.post(
+      `https://react-http-735b2-default-rtdb.firebaseio.com/${reciveremail}/inbox.json`, JSON.stringify({ ...obj, tic: true}))
+      
+      const sent=await axios.post(
+        `https://react-http-735b2-default-rtdb.firebaseio.com/${sentemail}/sent.json`, JSON.stringify(obj))
+      console.log(sent.data.name)
+      dispatch(sentMailAction.addmail({...obj,id:sent.data.name}))
+    }
+    catch (err) {
+      console.log(err)
+    }
+    setRecipient("")
+    setSubject("")
 
+  };
   return (
     <div>
       <Container>
-        <Card>
-          <label>Recipient:</label>
-          <input
-            type="text"
-            value={recipient}
-            onChange={handleRecipientChange}
-          />
-
-          <label>Subject:</label>
-          <input type="text" value={subject} onChange={handleSubjectChange} />
-
-          <Editor
-            editorState={editorState}
-            onEditorStateChange={handleEditorChange}
-          />
-          <button onClick={handleSend}>Send</button>
+        <Card style={{ margin: "2rem 0", padding: "2rem 2rem" }}>
+          <Form onSubmit={handleSend}>
+            <Form.Label>To</Form.Label>
+            <Form.Control
+              type="text"
+              value={recipient}
+              name="recipent"
+              onChange={handleRecipientChange}
+            />
+            <Form.Label>Subject:</Form.Label>
+            <Form.Control
+              type="text"
+              value={subject}
+              onChange={handleSubjectChange}
+              name="subject"
+            />
+            <Editor
+              editorState={editorState}
+              editorStyle={{ height: "300px", overflow: "auto" }}
+              toolbarClassName="toolbarClassName"
+              wrapperClassName="wrapperClassName"
+              editorClassName="editorClassName"
+              onEditorStateChange={editorStatehandler}
+            />
+            ;<Button type="onSubmit">Send</Button>
+          </Form>
         </Card>
       </Container>
     </div>

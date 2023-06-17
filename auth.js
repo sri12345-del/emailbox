@@ -87,7 +87,7 @@ const Login = () => {
           throw new Error("somthing is wrong");
         }
       })
-        .then((data) => {
+      .then((data) => {
             if (issigin) {
               const newval = data.email.replace(/[^a-zA-Z0-9]/ig, "")
               localStorage.setItem("email",newval)
@@ -95,7 +95,8 @@ const Login = () => {
                 history.replace("/home")
             } else {
               changehandler()
-          }
+            }
+          
       }).catch((err) => console.log(err.message));
       setemail("")
       setpassword("")
